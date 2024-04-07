@@ -710,8 +710,7 @@ class TrueNode extends ExpNode {
         p.print("True");
     }
 
-	public void nameAnalysis(SymTable symTable) {
-	}
+    public void nameAnalysis(SymTable symTable) {}
 
     private int myLineNum;
     private int myCharNum;
@@ -727,8 +726,7 @@ class FalseNode extends ExpNode {
         p.print("False");
     }
 
-	public void nameAnalysis(SymTable symTable) {
-	}
+    public void nameAnalysis(SymTable symTable) {}
 
     private int myLineNum;
     private int myCharNum;
@@ -745,9 +743,9 @@ class IdNode extends ExpNode {
         p.print(myStrVal);
     }
 
-	public String toString() {
-		return myStrVal;
-	}
+    public String toString() {
+	return myStrVal;
+    }
 
     public int myLineNum;
     public int myCharNum;
@@ -765,6 +763,8 @@ class IntLitNode extends ExpNode {
         p.print(myIntVal);
     }
 
+    public void nameAnalysis(SymTable symTable) {}
+
     private int myLineNum;
     private int myCharNum;
     private int myIntVal;
@@ -780,6 +780,8 @@ class StrLitNode extends ExpNode {
     public void unparse(PrintWriter p, int indent) {
         p.print(myStrVal);
     }
+
+    public void nameAnalysis(SymTable symTable) {}
 
     private int myLineNum;
     private int myCharNum;
@@ -849,6 +851,11 @@ class CallExpNode extends ExpNode {
         p.print(")");   
     }
 
+    public void nameAnalysis(SymTable symTable){
+    	myId.nameAnalysis(symTable);
+    	myExpList.nameAnalysis(symTable);
+    }
+
     // 2 children
     private IdNode myId;
     private ExpListNode myExpList;  // possibly null
@@ -859,6 +866,10 @@ abstract class UnaryExpNode extends ExpNode {
         myExp = exp;
     }
 
+    public void nameAnalysis(SymTable symTable){
+        myExp.nameAnalysis(symTable);
+    }
+
     // 1 child
     protected ExpNode myExp;
 }
@@ -867,6 +878,11 @@ abstract class BinaryExpNode extends ExpNode {
     public BinaryExpNode(ExpNode exp1, ExpNode exp2) {
         myExp1 = exp1;
         myExp2 = exp2;
+    }
+
+    public void nameAnalysis(SymTable symTable){
+        myExp1.nameAnalysis(symTable);
+        myExp2.nameAnalysis(symTable);
     }
 
     // 2 children
