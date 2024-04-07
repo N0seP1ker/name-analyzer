@@ -130,6 +130,11 @@ class ProgramNode extends ASTnode {
         myDeclList.unparse(p, indent);
     }
 
+	public void nameAnalysis() {
+		SymTable symTable = new SymTable();
+		declList.nameAnalysis(symTable);
+	}
+
     // 1 child
     private DeclListNode myDeclList;
 }
@@ -151,6 +156,12 @@ class DeclListNode extends ASTnode {
         }
     }
 
+	public void nameAnalysis(SymTable symTable) {
+		for (int i = 0; i < myDecls.size(); i++) {
+			myDecls.get(i).nameAnalysis(symTable);
+		}
+	}
+
     // list of children (DeclNodes)
     private List<DeclNode> myDecls;
 }
@@ -166,7 +177,13 @@ class StmtListNode extends ASTnode {
             it.next().unparse(p, indent);
         } 
     }
-
+	
+	public void nameAnalysis(SymbolTable symTable) {
+		for (int i = 0; i < myStmts.size(); i++) {
+			myStmts.get(i).nameAnalysis(symTable);
+		}
+	}
+	
     // list of children (StmtNodes)
     private List<StmtNode> myStmts;
 }
@@ -187,6 +204,12 @@ class ExpListNode extends ASTnode {
         } 
     }
 
+	public void nameAnalysis(SymTable symTable) {
+		for (int i = 0; i < myExps.size(); i++) {
+			myExps.get(i).nameAnalysis(symTable);
+		}
+	}
+
     // list of children (ExpNodes)
     private List<ExpNode> myExps;
 }
@@ -205,6 +228,20 @@ class FormalsListNode extends ASTnode {
             }
         }
     }
+	
+	public LinkedList<String> getFormalList() {
+		LinkedList<String> retVal = new LinkedList<String>();
+		for (FormalDeclNode node:myFormals) {
+			retVal.add(node.toString());
+		}
+		return retVal;
+	}
+
+	public void nameAnalysis(SymbolTable symTable){
+		for (int i = 0; i < myFormals.size(); i++) {
+			myFormals.get(i).nameAnalysis(symTable);
+		}
+	}
 
     // list of children (FormalDeclNodes)
     private List<FormalDeclNode> myFormals;
@@ -249,6 +286,27 @@ class VarDeclNode extends DeclNode {
         p.println(".");
     }
 
+	public void nameAnalysis(SymTable symTable) {
+		if (myType.toString().equals("void") {
+			ErrMsg.fatal(myId.lineNum, myId.charNum, "Non-function declared void");
+			return;
+		}
+		
+		Sym variable = new Sym(myType.toString());
+		symTable.addDecl(myId.idVal, variable);
+		nameAnalysisVarHelper();
+	}
+
+	public void nameAnalysisVarHelper(SymTable symTable) {
+		try {
+			symTable.addDecl(myId.toString(), new Sym(myType.toString()));
+		} catch (DuplicateSymException e) {
+			ErrMsg.fatal(myId.lineNum, myId.charNum, "Multiply-declared identifier");
+		} catch (Exception e) {
+			Sysmtem.out.println(e);
+		}
+    }
+
     // 3 children
     private TypeNode myType;
     private IdNode myId;
@@ -280,6 +338,29 @@ class FctnDeclNode extends DeclNode {
         p.println("]\n");
     }
 
+	public void nameAnalysis(SymTable symTable) {
+		LinkedList<String> param = myFormalsList.getFormalList();
+		try {
+			symTable.addDecl(myId.toString(), new FnSym(myType.toString(), param));			
+		} catch (DuplicateSymException e) {
+			ErrMsg.fatal(myId.lineNum, myId.charNum, "Multiply-declared identifier");
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+
+		// add a new scope for parameters and function body
+		symTable.addScope();
+		myFormalsList.nameAnalysis(symTable);
+		myBody.nameAnalysis(symTable);
+
+		try {
+			// remove the scope after exiting function body
+			symTable.removeScope();
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+	}
+
     // 4 children
     private TypeNode myType;
     private IdNode myId;
@@ -299,8 +380,29 @@ class FormalDeclNode extends DeclNode {
         myId.unparse(p, 0);
     }
 
+	public void nameAnalysis(SymTable symTable) {
+		if (myType.toString().equals("void") {
+			ErrMsg.fatal(myId.lineNum, myId.charNum, "Non-function declared void");
+			return;
+		}
+ 
+        Sym variable = new Sym(myType.toString());
+        symTable.addDecl(myId.idVal, variable);
+        nameAnalysisVarHelper();
+    }
+ 
+    public void nameAnalysisVarHelper(SymTable symTable) {
+		try {
+            symTable.addDecl(myId.toString(), new Sym(myType.toString()));
+        } catch (DuplicateSymException e) {
+            ErrMsg.fatal(myId.lineNum, myId.charNum, "Multiply-declared identifier");
+        } catch (Exception e) {
+			Sysmtem.out.println(e);
+        }
+	}
+
     // 2 children
-    private TypeNode myType;
+    public TypeNode myType;
     private IdNode myId;
 }
 
@@ -339,6 +441,10 @@ class LogicalNode extends TypeNode {
     public void unparse(PrintWriter p, int indent) {
         p.print("logical");
     }
+	
+	public String toString() {
+		return "logical";
+	}
 }
 
 class IntegerNode extends TypeNode {
@@ -348,6 +454,10 @@ class IntegerNode extends TypeNode {
     public void unparse(PrintWriter p, int indent) {
         p.print("integer");
     }
+
+	public String toString() {
+		return "integer";
+	}
 }
 
 class VoidNode extends TypeNode {
@@ -357,6 +467,10 @@ class VoidNode extends TypeNode {
     public void unparse(PrintWriter p, int indent) {
         p.print("void");
     }
+
+	public String toString() {
+		return "void";
+	}
 }
 
 class TupleNode extends TypeNode {
@@ -390,6 +504,10 @@ class AssignStmtNode extends StmtNode {
         myAssign.unparse(p, -1); // no parentheses
         p.println(".");
     }
+
+	public void nameAnalysis(SymbolTable symTable) {
+		myAssign.nameAnalysis(SymbolTable);
+	}
 
     // 1 child
     private AssignExpNode myAssign;
@@ -592,6 +710,9 @@ class TrueNode extends ExpNode {
         p.print("True");
     }
 
+	public void nameAnalysis(SymTable symTable) {
+	}
+
     private int myLineNum;
     private int myCharNum;
 }
@@ -605,6 +726,9 @@ class FalseNode extends ExpNode {
     public void unparse(PrintWriter p, int indent) {
         p.print("False");
     }
+
+	public void nameAnalysis(SymTable symTable) {
+	}
 
     private int myLineNum;
     private int myCharNum;
@@ -621,8 +745,12 @@ class IdNode extends ExpNode {
         p.print(myStrVal);
     }
 
-    private int myLineNum;
-    private int myCharNum;
+	public String toString() {
+		return myStrVal;
+	}
+
+    public int myLineNum;
+    public int myCharNum;
     private String myStrVal;
 }
 
@@ -689,6 +817,11 @@ class AssignExpNode extends ExpNode {
         myExp.unparse(p, 0);
         if (indent != -1)  p.print(")");    
     }
+	
+	public void nameAnalysis(SymbolTable symTable) {
+		myLhs.nameAnalysis();
+		myExp.nameAnalysis();
+	}
 
     // 2 children
     private ExpNode myLhs;

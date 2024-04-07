@@ -13,3 +13,19 @@ public class Sym {
 		return type;
 	}
 }
+
+public class FnSym extends Sym {
+	private LinkedList<String> paramType;
+	private String retType;
+	
+	public FnSym (String ret, LinkedList<String> param) {
+		super("function");
+		paramType = param;
+		retType = ret;
+	}
+
+	public String toString() {
+		String param = String.join (" ", paramType);
+		return param + " = " + retType;
+	}
+}
