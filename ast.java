@@ -298,6 +298,7 @@ class FctnBodyNode extends ASTnode {
 // **********************************************************************
 
 abstract class DeclNode extends ASTnode {
+    abstract public void nameAnalysis(SymTable symTable);
 }
 
 class VarDeclNode extends DeclNode {
@@ -521,6 +522,7 @@ class TupleNode extends TypeNode {
 // **********************************************************************
 
 abstract class StmtNode extends ASTnode {
+    abstract public void nameAnalysis(SymTable symTable);
 }
 
 class AssignStmtNode extends StmtNode {
@@ -553,6 +555,10 @@ class PostIncStmtNode extends StmtNode {
         p.println("++.");
     }
 
+    public void nameAnalysis(SymTable symTable) {
+	myExp.nameAnalysis(symTable);
+    }
+
     // 1 child
     private ExpNode myExp;
 }
@@ -566,6 +572,10 @@ class PostDecStmtNode extends StmtNode {
         doIndent(p, indent);
         myExp.unparse(p, 0);
         p.println("--.");
+    }
+
+    public void nameAnalysis(SymTable symTable) {
+        myExp.nameAnalysis(symTable);
     }
 
     // 1 child
@@ -729,6 +739,10 @@ class ReadStmtNode extends StmtNode {
         p.println(".");
     }
 
+    public void nameAnalysis(SymTable symTable) {
+        myExp.nameAnalysis(symTable);
+    }
+
     // 1 child (actually can only be an IdNode or a TupleAccessNode)
     private ExpNode myExp;
 }
@@ -745,6 +759,10 @@ class WriteStmtNode extends StmtNode {
         p.println(".");
     }
 
+    public void nameAnalysis(SymTable symTable) {
+        myExp.nameAnalysis(symTable);
+    }    
+
     // 1 child
     private ExpNode myExp;
 }
@@ -759,6 +777,10 @@ class CallStmtNode extends StmtNode {
         myCall.unparse(p, indent);
         p.println(".");
     }
+
+    public void nameAnalysis(SymTable symTable) {
+        myExp.nameAnalysis(symTable);
+    } 
 
     // 1 child
     private CallExpNode myCall;
@@ -777,6 +799,12 @@ class ReturnStmtNode extends StmtNode {
             myExp.unparse(p, 0);
         }
         p.println(".");
+    }
+
+    public void nameAnalysis(SymTable symTable) {
+        if (myExp != null) { // prevent null pointer access
+	    myExp.nameAnalysis(symTable);
+	}
     }
 
     // 1 child
