@@ -452,9 +452,26 @@ class TupleDeclNode extends DeclNode {
         p.println("}.\n");
     }
 
+    public void nameAnalysis(SymTable symTable) {
+	Sym sym = new Sym("tupledecl");
+	
+	try {
+	    symTable.addDecl(myId.toString(), sym);
+	} catch (DuplicateSymException e) {
+	    ErrMsg.fatal(myId.lineNum, myId.charNum, "Multiply-declared identifier");
+	} catch (Exception e) {
+	    System.out.println(e.getMessage());
+	}
+
+	mySymTable = new SymTable();
+	// TODO: add stuff for tuple decl
+	myDeclList.nameAnalysis(symTable);
+    }
+
     // 2 children
     public IdNode myId;
     private DeclListNode myDeclList;
+    public SymTable mySymTable;
 }
 
 // **********************************************************************
@@ -816,6 +833,7 @@ class ReturnStmtNode extends StmtNode {
 // **********************************************************************
 
 abstract class ExpNode extends ASTnode {
+    abstract public void nameAnalysis(SymTable symTable);
 }
 
 class TrueNode extends ExpNode {
