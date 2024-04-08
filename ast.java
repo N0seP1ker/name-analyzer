@@ -802,15 +802,29 @@ class IdNode extends ExpNode {
 
     public void unparse(PrintWriter p, int indent) {
         p.print(myStrVal);
+	if (mySym != null) {
+	    p.print("<");
+            p.print(mySym.toString());
+            p.print(">");
+	}
     }
 
     public String toString() {
 	return myStrVal;
     }
 
+    // TODO: need to consider for name of TUPLE
+    public void nameAnalysis(SymTable symTable) {
+	mySym = symTable.lookupGlobal(mrStrVal);
+	if (mySym == null) {
+	    ErrMsg.fatal(myLineNum, myCharNum, "Undeclared identifier");
+	}
+    }
+
     public int myLineNum;
     public int myCharNum;
     private String myStrVal;
+    private mySym;
 }
 
 class IntLitNode extends ExpNode {

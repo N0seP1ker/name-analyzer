@@ -25,7 +25,10 @@ public class FnSym extends Sym {
 	}
 
 	public String toString() {
-		String param = String.join (" ", paramType);
-		return param + " = " + retType;
+		String param = String.join (", ", paramType);
+		if (params.equals("")) {
+			param = "void";
+		}
+		return param + " -> " + retType;
 	}
 }
