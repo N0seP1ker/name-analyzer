@@ -162,6 +162,30 @@ class DeclListNode extends ASTnode {
 		}
 	}
 
+	// only called in FnBodyNode but since its a DeclListNode type its here
+	public void nameAnalysisFnBody(SymTable symTable) {
+		// we have checked for non declared in fnDecl, only check for doubly declared here
+		HashMap<String, Integer> counter = new HashMap<String, Integer>();
+		for(int i = 0; i < myDecls.size(); i++) {
+			String key = myDecls.get(i).myId.toString();
+			int cur = 1;
+			if (counter.get(key) == null) {
+				if (symTable.lookupLocal(key) == null) {
+					// not already in local scope, then add it
+					myDecls.get(i).nameAnalysis(symTable);
+				}
+				counter.put(key, cur);
+			} else { // already in counter
+				cur = counter.get(key) + 1;
+				counter.replace(key, cur);
+			}
+			if (counter.get(key) > 1) { // check if counter > 1
+				ErrMsg.fatal(myDecls.get(i).myId.lineNum, myDecls.get(i).myId.charNum
+						, "Multiply-declared identifier");
+			}
+		}
+	}
+
     // list of children (DeclNodes)
     private List<DeclNode> myDecls;
 }
@@ -258,6 +282,11 @@ class FctnBodyNode extends ASTnode {
         myStmtList.unparse(p, indent);
     }
 
+    public void nameAnalysis (SymTable symTable) {
+	myDeclList.nameAnalysisFnBody(symTable);
+        myStmtList.nameAnalysis(symTable);
+    }
+
     // 2 children
     private DeclListNode myDeclList;
     private StmtListNode myStmtList;
@@ -308,8 +337,8 @@ class VarDeclNode extends DeclNode {
     }
 
     // 3 children
-    private TypeNode myType;
-    private IdNode myId;
+    public TypeNode myType;
+    public IdNode myId;
     private int mySize;  // use value NON_TUPLE if this is not a tuple type
 
     public static int NON_TUPLE = -1;
@@ -362,8 +391,8 @@ class FctnDeclNode extends DeclNode {
 	}
 
     // 4 children
-    private TypeNode myType;
-    private IdNode myId;
+    public TypeNode myType;
+    public IdNode myId;
     private FormalsListNode myFormalsList;
     private FctnBodyNode myBody;
 }
@@ -388,22 +417,22 @@ class FormalDeclNode extends DeclNode {
  
         Sym variable = new Sym(myType.toString());
         symTable.addDecl(myId.idVal, variable);
-        nameAnalysisVarHelper();
+        nameAnalysisVarHelper(symTable);
     }
  
     public void nameAnalysisVarHelper(SymTable symTable) {
-		try {
+	try {
             symTable.addDecl(myId.toString(), new Sym(myType.toString()));
         } catch (DuplicateSymException e) {
             ErrMsg.fatal(myId.lineNum, myId.charNum, "Multiply-declared identifier");
         } catch (Exception e) {
-			Sysmtem.out.println(e);
+	    Sysmtem.out.println(e);
         }
-	}
+    }
 
     // 2 children
     public TypeNode myType;
-    private IdNode myId;
+    public IdNode myId;
 }
 
 class TupleDeclNode extends DeclNode {
@@ -423,8 +452,8 @@ class TupleDeclNode extends DeclNode {
     }
 
     // 2 children
-    private IdNode myId;
-	private DeclListNode myDeclList;
+    public IdNode myId;
+    private DeclListNode myDeclList;
 }
 
 // **********************************************************************
