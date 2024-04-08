@@ -178,7 +178,7 @@ class StmtListNode extends ASTnode {
         } 
     }
 	
-	public void nameAnalysis(SymbolTable symTable) {
+	public void nameAnalysis(SymTable symTable) {
 		for (int i = 0; i < myStmts.size(); i++) {
 			myStmts.get(i).nameAnalysis(symTable);
 		}
@@ -237,7 +237,7 @@ class FormalsListNode extends ASTnode {
 		return retVal;
 	}
 
-	public void nameAnalysis(SymbolTable symTable){
+	public void nameAnalysis(SymTable symTable){
 		for (int i = 0; i < myFormals.size(); i++) {
 			myFormals.get(i).nameAnalysis(symTable);
 		}
@@ -505,8 +505,8 @@ class AssignStmtNode extends StmtNode {
         p.println(".");
     }
 
-	public void nameAnalysis(SymbolTable symTable) {
-		myAssign.nameAnalysis(SymbolTable);
+	public void nameAnalysis(SymTable symTable) {
+		myAssign.nameAnalysis(SymTable);
 	}
 
     // 1 child
@@ -561,6 +561,23 @@ class IfStmtNode extends StmtNode {
         p.println("]");  
     }
 
+	public void nameAnalysis(SymTable symTable) {
+		myExp.nameAnalysis(symTable);
+		
+		// add a new scope for the inside of the if statement
+		symTable.newScope();
+
+		myDeclList.nameAnalysis(symTable);
+		myStmtList.nameAnalysis(symTable);
+
+		try {
+			symTable.removeScope();
+		}
+		catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
     // 3 children
     private ExpNode myExp;
     private DeclListNode myDeclList;
@@ -595,6 +612,35 @@ class IfElseStmtNode extends StmtNode {
         p.println("]"); 
     }
 
+	public void nameAnalysis(SymTable symTable) {
+		myExp.nameAnalysis(symTable);
+	
+		// add a new scope for the inside of the if statement
+		symTable.addScope();
+		myThenDeclList.nameAnalysis(symTable);
+		myThenStmtList.nameAnalysis(symTable);
+
+		// go back to the original scope outside of if
+		try {
+			symTable.removeScope();
+
+		} catch (Exception e){
+			System.out.println(e.getMessage());
+		}
+
+		// add another scope for the inside of the else statement
+		symTable.addScope();
+		myElseStmtList.nameAnalysis(symTable);
+		myElseDeclList.nameAnalysis(symTable);
+	
+		// go back to the original scope outside of else
+		try {
+			symTable.removeScope();
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
     // 5 children
     private ExpNode myExp;
     private DeclListNode myThenDeclList;
@@ -620,6 +666,21 @@ class WhileStmtNode extends StmtNode {
         doIndent(p, indent);
         p.println("]");
     }
+
+	public void nameAnalysis(SymTable symTable) {
+		myExp.nameAnalysis(symTable);
+
+		// inside the while loop is its own scope
+		symTable.addScope();
+		myDeclList.nameAnalysis(symTable);
+		myStmtList.nameAnalysis(symTable);
+
+		try {
+			symTable.removeScope();
+		} catch (Exception e) {
+			System.out.println(e.getMessage);
+		}
+	}
 
     // 3 children
     private ExpNode myExp;
@@ -820,7 +881,7 @@ class AssignExpNode extends ExpNode {
         if (indent != -1)  p.print(")");    
     }
 	
-	public void nameAnalysis(SymbolTable symTable) {
+	public void nameAnalysis(SymTable symTable) {
 		myLhs.nameAnalysis();
 		myExp.nameAnalysis();
 	}
