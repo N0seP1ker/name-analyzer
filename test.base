@@ -1,0 +1,7 @@
+tuple Point {
+    integer x.
+    integer y.
+}.
+void g{} [
+	tuple Point k.
+]

@@ -132,7 +132,7 @@ class ProgramNode extends ASTnode {
 
 	public void nameAnalysis() {
 		SymTable symTable = new SymTable();
-		declList.nameAnalysis(symTable);
+		myDeclList.nameAnalysis(symTable);
 	}
 
     // 1 child
@@ -167,20 +167,24 @@ class DeclListNode extends ASTnode {
 		// we have checked for non declared in fnDecl, only check for doubly declared here
 		HashMap<String, Integer> counter = new HashMap<String, Integer>();
 		for(int i = 0; i < myDecls.size(); i++) {
-			String key = myDecls.get(i).myId.toString();
+			String key = ((FctnDeclNode)myDecls.get(i)).myId.toString();
 			int cur = 1;
 			if (counter.get(key) == null) {
+				try {
 				if (symTable.lookupLocal(key) == null) {
 					// not already in local scope, then add it
 					myDecls.get(i).nameAnalysis(symTable);
 				}
 				counter.put(key, cur);
+				} catch (EmptySymTableException e) {
+					System.out.println("EmptySymTableException");
+				}
 			} else { // already in counter
 				cur = counter.get(key) + 1;
 				counter.replace(key, cur);
 			}
 			if (counter.get(key) > 1) { // check if counter > 1
-				ErrMsg.fatal(myDecls.get(i).myId.lineNum, myDecls.get(i).myId.charNum
+				ErrMsg.fatal(((FctnDeclNode)myDecls.get(i)).myId.myLineNum, ((FctnDeclNode)myDecls.get(i)).myId.myCharNum
 						, "Multiply-declared identifier");
 			}
 		}
@@ -317,23 +321,36 @@ class VarDeclNode extends DeclNode {
     }
 
 	public void nameAnalysis(SymTable symTable) {
-		if (myType.toString().equals("void") {
-			ErrMsg.fatal(myId.lineNum, myId.charNum, "Non-function declared void");
+		if (myType.toString().equals("void")) {
+			ErrMsg.fatal(myId.myLineNum, myId.myCharNum, "Non-function declared void");
 			return;
+		}
+		else if (myType.toString().equals("tuple")) {
+			System.out.println("tuple");
 		}
 		
 		Sym variable = new Sym(myType.toString());
-		symTable.addDecl(myId.idVal, variable);
-		nameAnalysisVarHelper();
+		
+		/*
+		try {
+			symTable.addDecl(myId.myStrVal, variable);
+		} catch (DuplicateSymNameException e) {
+			ErrMsg.fatal(myId.myLineNum, myId.myCharNum, "Multiply-declared identifier");
+		} catch (EmptySymTableException e) {
+			System.out.println("EmptySymTableException");
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}*/
+		nameAnalysisVarHelper(symTable);
 	}
 
 	public void nameAnalysisVarHelper(SymTable symTable) {
 		try {
 			symTable.addDecl(myId.toString(), new Sym(myType.toString()));
-		} catch (DuplicateSymException e) {
-			ErrMsg.fatal(myId.lineNum, myId.charNum, "Multiply-declared identifier");
+		} catch (DuplicateSymNameException e) {
+			ErrMsg.fatal(myId.myLineNum, myId.myCharNum, "Multiply-declared identifier");
 		} catch (Exception e) {
-			Sysmtem.out.println(e);
+			System.out.println(e);
 		}
     }
 
@@ -372,10 +389,10 @@ class FctnDeclNode extends DeclNode {
 		LinkedList<String> param = myFormalsList.getFormalList();
 		try {
 			symTable.addDecl(myId.toString(), new FnSym(myType.toString(), param));			
-		} catch (DuplicateSymException e) {
-			ErrMsg.fatal(myId.lineNum, myId.charNum, "Multiply-declared identifier");
+		} catch (DuplicateSymNameException e) {
+			ErrMsg.fatal(myId.myLineNum, myId.myCharNum, "Multiply-declared identifier");
 		} catch (Exception e) {
-			System.out.println(e);
+			System.out.println(e.getMessage());
 		}
 
 		// add a new scope for parameters and function body
@@ -411,23 +428,21 @@ class FormalDeclNode extends DeclNode {
     }
 
 	public void nameAnalysis(SymTable symTable) {
-		if (myType.toString().equals("void") {
-			ErrMsg.fatal(myId.lineNum, myId.charNum, "Non-function declared void");
+		if (myType.toString().equals("void")) {
+			ErrMsg.fatal(myId.myLineNum, myId.myCharNum, "Non-function declared void");
 			return;
 		}
- 
-        Sym variable = new Sym(myType.toString());
-        symTable.addDecl(myId.idVal, variable);
+
         nameAnalysisVarHelper(symTable);
     }
  
     public void nameAnalysisVarHelper(SymTable symTable) {
 	try {
             symTable.addDecl(myId.toString(), new Sym(myType.toString()));
-        } catch (DuplicateSymException e) {
-            ErrMsg.fatal(myId.lineNum, myId.charNum, "Multiply-declared identifier");
+        } catch (DuplicateSymNameException e) {
+            ErrMsg.fatal(myId.myLineNum, myId.myCharNum, "Multiply-declared identifier");
         } catch (Exception e) {
-	    Sysmtem.out.println(e);
+		    System.out.println(e.getMessage());
         }
     }
 
@@ -459,8 +474,8 @@ class TupleDeclNode extends DeclNode {
 		try {
 			// checking if identifier of this tuple decl has already been used
 			symTable.addDecl(myId.toString(), tupleDeclSym);
-		} catch (DuplicateSymException e) {
-			ErrMsg.fatal(myId.lineNum, myId.charNum, "Multiply-declared identifier");
+		} catch (DuplicateSymNameException e) {
+			ErrMsg.fatal(myId.myLineNum, myId.myCharNum, "Multiply-declared identifier");
 		} catch (Exception e) {
 		    System.out.println(e.getMessage());
 		}
@@ -533,21 +548,21 @@ class TupleNode extends TypeNode {
 
 	public void nameAnalysis(SymTable symTable) {
 		// TODO: Wait how do you get access to tuple type? not ID
-		Sym lookUpTuple = symTable.lookupGlobally(myId.toString());
+		Sym lookUpTuple = symTable.lookupGlobal(myId.toString());
 
 		if (lookUpTuple == null) {
 			// could not find the tuple
-			ErrMsg.fatal(myId.lineNum, myId.charNum, "Undeclared identifier");
+			ErrMsg.fatal(myId.myLineNum, myId.myCharNum, "Undeclared identifier");
 		}
 		else {
 			if (!(lookUpTuple instanceof TupleDefSym)) {
-				ErrMsg.fatal(myId.lineNum, myId.charNum, "Invalid name of tuple type");
+				ErrMsg.fatal(myId.myLineNum, myId.myCharNum, "Invalid name of tuple type");
 			}
 			else {
 				try {
 					symTable.addDecl(myId.toString(), new TupleSym(myId.toString()));
-				} catch (DuplicateSymException e) {
-					ErrMsg.fatal(myDecls.get(i).myId.lineNum, myDecls.get(i).myId.charNum
+				} catch (DuplicateSymNameException e) {
+					ErrMsg.fatal(myDecls.get(i).myId.myLineNum, myDecls.get(i).myId.myCharNum
 						, "Multiply-declared identifier");
 				} catch (Exception e) {
 					System.out.println(e.getMessage());
@@ -580,7 +595,7 @@ class AssignStmtNode extends StmtNode {
     }
 
 	public void nameAnalysis(SymTable symTable) {
-		myAssign.nameAnalysis(SymTable);
+		myAssign.nameAnalysis(symTable);
 	}
 
     // 1 child
@@ -647,7 +662,7 @@ class IfStmtNode extends StmtNode {
 		myExp.nameAnalysis(symTable);
 		
 		// add a new scope for the inside of the if statement
-		symTable.newScope();
+		symTable.addScope();
 
 		myDeclList.nameAnalysis(symTable);
 		myStmtList.nameAnalysis(symTable);
@@ -760,7 +775,7 @@ class WhileStmtNode extends StmtNode {
 		try {
 			symTable.removeScope();
 		} catch (Exception e) {
-			System.out.println(e.getMessage);
+			System.out.println(e.getMessage());
 		}
 	}
 
@@ -822,7 +837,7 @@ class CallStmtNode extends StmtNode {
     }
 
     public void nameAnalysis(SymTable symTable) {
-        myExp.nameAnalysis(symTable);
+        myCall.nameAnalysis(symTable);
     } 
 
     // 1 child
@@ -846,7 +861,7 @@ class ReturnStmtNode extends StmtNode {
 
     public void nameAnalysis(SymTable symTable) {
         if (myExp != null) { // prevent null pointer access
-	    myExp.nameAnalysis(symTable);
+			myExp.nameAnalysis(symTable);
 	}
     }
 
@@ -916,16 +931,20 @@ class IdNode extends ExpNode {
 
     // TODO: need to consider for name of TUPLE
     public void nameAnalysis(SymTable symTable) {
-	mySym = symTable.lookupGlobal(mrStrVal);
-	if (mySym == null) {
-	    ErrMsg.fatal(myLineNum, myCharNum, "Undeclared identifier");
-	}
+		try {
+			mySym = symTable.lookupGlobal(myStrVal);
+		} catch (EmptySymTableException e) {
+			System.out.println("EmptySymTableException");
+		}
+		if (mySym == null) {
+			ErrMsg.fatal(myLineNum, myCharNum, "Undeclared identifier");
+		}
     }
 
     public int myLineNum;
     public int myCharNum;
-    private String myStrVal;
-    private mySym;
+    public String myStrVal;
+    private Sym mySym;
 }
 
 class IntLitNode extends ExpNode {
@@ -1004,8 +1023,8 @@ class AssignExpNode extends ExpNode {
     }
 	
 	public void nameAnalysis(SymTable symTable) {
-		myLhs.nameAnalysis();
-		myExp.nameAnalysis();
+		myLhs.nameAnalysis(symTable);
+		myExp.nameAnalysis(symTable);
 	}
 
     // 2 children

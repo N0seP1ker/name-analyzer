@@ -1,3 +1,5 @@
+import java.util.LinkedList;
+
 public class Sym {
 	private String type;
 	
@@ -14,7 +16,7 @@ public class Sym {
 	}
 }
 
-public class FnSym extends Sym {
+class FnSym extends Sym {
 	private LinkedList<String> paramType;
 	private String retType;
 	
@@ -26,14 +28,14 @@ public class FnSym extends Sym {
 
 	public String toString() {
 		String param = String.join (", ", paramType);
-		if (params.equals("")) {
+		if (param.equals("")) {
 			param = "void";
 		}
 		return param + " -> " + retType;
 	}
 }
 
-public class TupleDefSym extends Sym {
+class TupleDefSym extends Sym {
 	
 	private SymTable symTable;
 	private String name;
@@ -47,12 +49,12 @@ public class TupleDefSym extends Sym {
 
 	// toString will return "tuple"
 
-	public getSymTable() {
+	public SymTable getSymTable() {
 		return symTable;
 	}
 }
 
-public class TupleSym extends Sym {
+class TupleSym extends Sym {
 	private String name;
 
 	public TupleSym (String name) {
@@ -61,7 +63,7 @@ public class TupleSym extends Sym {
 	}
 
 	// we want toString() to return the name of the tuple type
-	public toString() {
+	public String toString() {
 		return name;
 	}
 }
