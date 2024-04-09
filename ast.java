@@ -453,19 +453,20 @@ class TupleDeclNode extends DeclNode {
     }
 
     public void nameAnalysis(SymTable symTable) {
-	Sym sym = new Sym("tupledecl");
+		SymTable mySymTable = new SymTable();
+		TupleDefSym tupleDeclSym = new TupleDefSym(mySymTable); // has type tuple
 	
-	try {
-	    symTable.addDecl(myId.toString(), sym);
-	} catch (DuplicateSymException e) {
-	    ErrMsg.fatal(myId.lineNum, myId.charNum, "Multiply-declared identifier");
-	} catch (Exception e) {
-	    System.out.println(e.getMessage());
-	}
-
-	mySymTable = new SymTable();
-	// TODO: add stuff for tuple decl
-	myDeclList.nameAnalysis(symTable);
+		try {
+			// checking if identifier of this tuple decl has already been used
+			symTable.addDecl(myId.toString(), tupleDeclSym);
+		} catch (DuplicateSymException e) {
+			ErrMsg.fatal(myId.lineNum, myId.charNum, "Multiply-declared identifier");
+		} catch (Exception e) {
+		    System.out.println(e.getMessage());
+		}
+		
+		// analyze the decl list of the tuple in its own new sym table
+		myDeclList.nameAnalysis(mySymTable);
     }
 
     // 2 children
@@ -529,6 +530,31 @@ class TupleNode extends TypeNode {
         p.print("tuple ");
         myId.unparse(p, 0);
     }
+
+	public void nameAnalysis(SymTable symTable) {
+		// TODO: Wait how do you get access to tuple type? not ID
+		Sym lookUpTuple = symTable.lookupGlobally(myId.toString());
+
+		if (lookUpTuple == null) {
+			// could not find the tuple
+			ErrMsg.fatal(myId.lineNum, myId.charNum, "Undeclared identifier");
+		}
+		else {
+			if (!(lookUpTuple instanceof TupleDefSym)) {
+				ErrMsg.fatal(myId.lineNum, myId.charNum, "Invalid name of tuple type");
+			}
+			else {
+				try {
+					symTable.addDecl(myId.toString(), new TupleSym(myId.toString()));
+				} catch (DuplicateSymException e) {
+					ErrMsg.fatal(myDecls.get(i).myId.lineNum, myDecls.get(i).myId.charNum
+						, "Multiply-declared identifier");
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+				}
+			}
+		}
+	}
 	
 	// 1 child
     private IdNode myId;
@@ -950,6 +976,13 @@ class TupleAccessNode extends ExpNode {
         p.print("):");
         myId.unparse(p, 0);
     }
+
+	public void nameAnalysis(SymTable symTable) {
+		// TODO: check if loc is a tuple
+		// if determined it is a tuple then use the tuple sym 
+		// to lookup the RHS field to see if it is valid
+		
+	}
 
     // 2 children
     private ExpNode myLoc;	

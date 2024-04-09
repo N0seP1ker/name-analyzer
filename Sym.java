@@ -41,14 +41,11 @@ public class TupleDefSym extends Sym {
 	public TupleDefSym (String name, SymTable symTable) {
 		super("tuple");
 		this.symTable = symTable;
-		this.name = name;
 	}
 
 	// get type will return "tuple"
 
-	public String toString() {
-		return name;
-	}
+	// toString will return "tuple"
 
 	public getSymTable() {
 		return symTable;
@@ -63,6 +60,7 @@ public class TupleSym extends Sym {
 		this.name = name;
 	}
 
+	// we want toString() to return the name of the tuple type
 	public toString() {
 		return name;
 	}
