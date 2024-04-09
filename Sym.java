@@ -32,3 +32,38 @@ public class FnSym extends Sym {
 		return param + " -> " + retType;
 	}
 }
+
+public class TupleDefSym extends Sym {
+	
+	private SymTable symTable;
+	private String name;
+		
+	public TupleDefSym (String name, SymTable symTable) {
+		super("tuple");
+		this.symTable = symTable;
+		this.name = name;
+	}
+
+	// get type will return "tuple"
+
+	public String toString() {
+		return name;
+	}
+
+	public getSymTable() {
+		return symTable;
+	}
+}
+
+public class TupleSym extends Sym {
+	private String name;
+
+	public TupleSym (String name) {
+		super("tupleInstance");
+		this.name = name;
+	}
+
+	public toString() {
+		return name;
+	}
+}
