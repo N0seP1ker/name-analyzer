@@ -4,10 +4,9 @@ tuple Point {
 	tuple Color c.
 }.
 
-tuple Color {
-	integer r.
-	integer b.
-	integer g.
+tuple AltPoint {
+    tuple Point p.
+    integer count.
 }.
 
 integer f{integer x, logical b} [ ]
@@ -16,8 +15,11 @@ void g{} [
     integer a.
     logical b.
     tuple Point p.
-!!    p:c:r = a.
+    tuple AltPoint pPoint.
+    p:x = a.
     b = a == 3.
     f(a + p:y*2, b).
     g().
+    pPoint:p:x = 100.
+    pPoint:p:y = 200.
 ]

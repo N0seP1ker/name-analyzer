@@ -22,7 +22,10 @@ class FnSym extends Sym {
 	
 	public FnSym (String ret, LinkedList<String> param) {
 		super("function");
-		paramType = param;
+		paramType = new LinkedList<String>();
+		for(String s : param) {
+			paramType.add(new String(s));
+		}
 		retType = ret;
 	}
 
