@@ -1,13 +1,22 @@
 tuple Point {
     integer x.
     integer y.
+	tuple Color c.
 }.
+
+tuple Color {
+	integer r.
+	integer b.
+	integer g.
+}.
+
 integer f{integer x, logical b} [ ]
+
 void g{} [
     integer a.
     logical b.
     tuple Point p.
-    p:x = a.
+!!    p:c:r = a.
     b = a == 3.
     f(a + p:y*2, b).
     g().

@@ -258,8 +258,8 @@ class FormalsListNode extends ASTnode {
 	
 	public LinkedList<String> getFormalList() {
 		LinkedList<String> retVal = new LinkedList<String>();
-		for (FormalDeclNode node:myFormals) {
-			retVal.add(node.toString());
+		for (FormalDeclNode node : myFormals) {
+			retVal.add(node.myType.toString());
 		}
 		return retVal;
 	}
@@ -412,6 +412,7 @@ class FctnDeclNode extends DeclNode {
 
 	public void nameAnalysis(SymTable symTable) {
 		LinkedList<String> param = myFormalsList.getFormalList();
+
 		try {
 			symTable.addDecl(myId.toString(), new FnSym(myType.toString(), param));			
 		} catch (DuplicateSymNameException e) {

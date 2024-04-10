@@ -1,0 +1,33 @@
+!! 1) testing Multiply-declared identifier
+
+tuple Point {
+    integer x.
+    integer y.
+}.
+!! Multiply-declared identifier expected at 8:7
+tuple Point { 
+	integer a.
+}.
+
+integer a.
+integer b.
+!! Multiply-declared identifier expected at 15:9
+integer a.
+!! Multiply-declared identifier expected at 17:9
+logical b.
+
+integer f{integer x, logical b} [ ]
+!! Multiply-declared identifier expected at 21:9
+integer f{integer a} [ ] 
+
+!! 2) testing Invalid name of tuple type
+void g{} [
+    integer a. !! fine
+    logical b. !! fine
+    tuple InvalidTuple z. !! Invalid name of tuple type expected at 27:24
+    z:x = a. !! Undeclared Undeclared identifier 28:5
+]
+
+tuple A {
+  tuple B b. !! Invalid name of tuple type expected 32:9
+}.
