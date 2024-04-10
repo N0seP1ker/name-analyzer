@@ -11,7 +11,7 @@ import java_cup.runtime.*;
 
 public class P4 {
     public static void main(String[] args)
-        throws IOException, EmptySymTableException, DuplicateSymNameException // may be thrown by the scanner
+        throws IOException // may be thrown by the scanner
     {
         // check for command-line args
         if (args.length != 2) {
@@ -54,11 +54,8 @@ public class P4 {
         }
 		
 			// ****** Add name analysis part here ******
-		SymTable symTable = new SymTable();
-		((ProgramNode) root.value).nameAnalysis(symTable);
-		if (!ErrMsg.flag) {	
-			((ASTnode)root.value).unparse(outFile, 0);
-		}
+		
+        ((ASTnode)root.value).unparse(outFile, 0);
         outFile.close();
 
         return;

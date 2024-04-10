@@ -28,6 +28,9 @@ class FnSym extends Sym {
 
 	public String toString() {
 		String param = String.join (", ", paramType);
+		if (param.equals("")) {
+			param = "void";
+		}
 		return param + " -> " + retType;
 	}
 }
@@ -52,17 +55,15 @@ class TupleDefSym extends Sym {
 }
 
 class TupleSym extends Sym {
-	private String tupleName;
-	private String varName;
+	private String name;
 
-	public TupleSym (String tupleName, String varName) {
+	public TupleSym (String name) {
 		super("tupleInstance");
-		this.tupleName = tupleName;
-		this.varName = varName;
+		this.name = name;
 	}
 
 	// we want toString() to return the name of the tuple type
 	public String toString() {
-		return tupleName;
+		return name;
 	}
 }
