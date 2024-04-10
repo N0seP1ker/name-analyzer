@@ -259,7 +259,7 @@ class FormalsListNode extends ASTnode {
 	public LinkedList<String> getFormalList() {
 		LinkedList<String> retVal = new LinkedList<String>();
 		for (FormalDeclNode node:myFormals) {
-			retVal.add(node.toString());
+			retVal.add(node.myType.toString());
 		}
 		return retVal;
 	}
