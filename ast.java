@@ -161,6 +161,18 @@ class DeclListNode extends ASTnode {
 		}
 	}
 
+	// called when tupledecl calls decllist with 2 SymTable
+	public void nameAnalysis(SymTable symTable, SymTable tupleSymTable) {
+		for (int i = 0; i < myDecls.size(); i++) {
+			VarDeclNode node = (VarDeclNode) myDecls.get(i);
+			if(node.mySize == VarDeclNode.NON_TUPLE) { // not a tuple
+				node.nameAnalysis(tupleSymTable);
+			} else {
+				node.nameAnalysis(symTable, tupleSymTable);
+			}
+		}
+	}
+
 	// only called in FnBodyNode but since its a DeclListNode type its here
 	public void nameAnalysisFnBody(SymTable symTable) {
 		// we have checked for non declared in fnDecl, only check for doubly declared here
@@ -321,12 +333,13 @@ class VarDeclNode extends DeclNode {
     }
 
 	public void nameAnalysis(SymTable symTable) {
+		// System.out.println("line: " + myId.myLineNum);symTable.print();
 		if (myType instanceof VoidNode) {
 			ErrMsg.fatal(myId.myLineNum, myId.myCharNum, "Non-function declared void");
 			return;
 		}
 		else if (myType instanceof TupleNode) {
-			nameAnalysisTupleHelper(symTable, ((TupleNode)myType).myId.toString(), myId.toString());
+			nameAnalysisTupleHelper(symTable, symTable, ((TupleNode)myType).myId.toString(), myId.toString());
 		} else {
 			Sym variable = new Sym(myType.toString());
 			nameAnalysisVarHelper(symTable);
@@ -343,7 +356,21 @@ class VarDeclNode extends DeclNode {
 		}
 	}
 
-	public void nameAnalysisTupleHelper(SymTable symTable, String tupleName, String varName) {
+	public void nameAnalysis(SymTable symTable, SymTable tupleSymTable) {
+		if (myType instanceof VoidNode) {
+                        ErrMsg.fatal(myId.myLineNum, myId.myCharNum, "Non-function declared void");
+                        return;
+                }
+		else if (myType instanceof TupleNode) {
+                        nameAnalysisTupleHelper(symTable, tupleSymTable, ((TupleNode)myType).myId.toString(), myId.toString());
+                }
+		else {
+                       Sym variable = new Sym(myType.toString());
+                       nameAnalysisVarHelper(tupleSymTable);
+		}
+	}
+
+	public void nameAnalysisTupleHelper(SymTable symTable, SymTable tupleSymTable, String tupleName, String varName) {
 		try {
 			Sym tupleSym = symTable.lookupGlobal(tupleName);
 			if (tupleSym == null) {
@@ -353,7 +380,7 @@ class VarDeclNode extends DeclNode {
 				ErrMsg.fatal(myId.myLineNum, myId.myCharNum, "Invalid name of tuple type");
 			} else {	
 				try {
-		            symTable.addDecl(varName, new TupleSym(tupleName, varName));
+		            tupleSymTable.addDecl(varName, new TupleSym(tupleName, varName));
 	            } catch (DuplicateSymNameException e) {
 				    ErrMsg.fatal(myId.myLineNum, myId.myCharNum, "Multiply-declared identifier");
 			    } catch (Exception e) {
@@ -382,7 +409,7 @@ class VarDeclNode extends DeclNode {
     // 3 children
     public TypeNode myType;
     public IdNode myId;
-    private int mySize;  // use value NON_TUPLE if this is not a tuple type
+    public int mySize;  // use value NON_TUPLE if this is not a tuple type
 
     public static int NON_TUPLE = -1;
 }
@@ -514,7 +541,7 @@ class TupleDeclNode extends DeclNode {
 		}
 		
 		// analyze the decl list of the tuple in its own new sym table
-		myDeclList.nameAnalysis(mySymTable);
+		myDeclList.nameAnalysis(symTable, mySymTable);
     }
 
 	public IdNode getId() {
@@ -1048,39 +1075,39 @@ class TupleAccessNode extends ExpNode {
 		// if determined it is a tuple then use the tuple sym 
 		// to lookup the RHS field to see if it is valid
 		if (myLoc instanceof TupleAccessNode) {
-			myLoc.nameAnalysis(symTable);
-		}
-
-		// confirmed with TA, no error inputs such as true:false:something so myLoc must be of type IdNode here
-		try {
-			// check if the LHS was defined
-			Sym sym = symTable.lookupGlobal(((IdNode)myLoc).toString());
-			if(sym == null) {
-				ErrMsg.fatal(((IdNode)myLoc).myLineNum, ((IdNode)myLoc).myCharNum, "Undeclared identifier");
-			} else if (!(sym instanceof TupleSym)) { // LHS is type Tuple
-				ErrMsg.fatal(((IdNode)myLoc).myLineNum, ((IdNode)myLoc).myCharNum, "Colon-access of non-tuple type");
-			} else { 
-				Sym sym2 = symTable.lookupGlobal(sym.toString()); // LHS is a declared Tuple type 
-				if(sym2 == null) {
+			myLoc.nameAnalysis(symTable); // this leaves the RHS unchecked
+						      // TODO think about how it would work recursively
+		} else {
+			// confirmed with TA, no error inputs such as true:false:something so myLoc must be of type IdNode here
+			try {
+				// check if the LHS was defined
+				Sym sym = symTable.lookupGlobal(((IdNode)myLoc).toString());
+				if(sym == null) {
 					ErrMsg.fatal(((IdNode)myLoc).myLineNum, ((IdNode)myLoc).myCharNum, "Undeclared identifier");
-				} else if (!(sym2 instanceof TupleDefSym)) { // not declared
-					ErrMsg.fatal(((IdNode)myLoc).myLineNum, ((IdNode)myLoc).myCharNum, "Invalid name of tuple type");
-				} else { // check if the RHS is a valid field
-					((IdNode)myLoc).nameAnalysis(symTable); // call nameanalysis on LHS
-					SymTable curSymTable = ((TupleDefSym)sym2).getSymTable();
-					Sym sym3 = curSymTable.lookupGlobal(myId.toString());
-					if(sym3 == null) {
-						ErrMsg.fatal(myId.myLineNum, myId.myCharNum, "Invalid tuple field name");
-					} else { // call nameanalysis on RHS
-						myId.setSymTable(curSymTable);
-						myId.nameAnalysis(symTable);
+				} else if (!(sym instanceof TupleSym)) { // LHS is type Tuple
+					ErrMsg.fatal(((IdNode)myLoc).myLineNum, ((IdNode)myLoc).myCharNum, "Colon-access of non-tuple type");
+				} else { 
+					Sym sym2 = symTable.lookupGlobal(sym.toString()); // LHS is a declared Tuple type 
+					if(sym2 == null) {
+						ErrMsg.fatal(((IdNode)myLoc).myLineNum, ((IdNode)myLoc).myCharNum, "Undeclared identifier");
+					} else if (!(sym2 instanceof TupleDefSym)) { // not declared
+						ErrMsg.fatal(((IdNode)myLoc).myLineNum, ((IdNode)myLoc).myCharNum, "Invalid name of tuple type");
+					} else { // check if the RHS is a valid field
+						((IdNode)myLoc).nameAnalysis(symTable); // call nameanalysis on LHS
+						SymTable curSymTable = ((TupleDefSym)sym2).getSymTable();
+						Sym sym3 = curSymTable.lookupGlobal(myId.toString());
+						if(sym3 == null) {
+							ErrMsg.fatal(myId.myLineNum, myId.myCharNum, "Invalid tuple field name");
+						} else { // call nameanalysis on RHS
+							myId.setSymTable(curSymTable);
+							myId.nameAnalysis(symTable);
+						}
 					}
 				}
+			} catch (EmptySymTableException e) {
+				System.out.println(e.getMessage());
 			}
-		} catch (EmptySymTableException e) {
-			System.out.println(e.getMessage());
 		}
-		
 	}
 
     // 2 children
