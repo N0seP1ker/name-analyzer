@@ -10,8 +10,7 @@ public class SymTable {
 	
 	public void addDecl(String name, Sym sym) 
 	throws DuplicateSymNameException, EmptySymTableException {
-		if (name == null || sym == null)
-			throw new IllegalArgumentException();
+		if (name == null || sym == null)		throw new IllegalArgumentException();
 		
 		if (list.isEmpty())
 			throw new EmptySymTableException();

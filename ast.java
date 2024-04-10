@@ -321,7 +321,7 @@ class VarDeclNode extends DeclNode {
     }
 
 	public void nameAnalysis(SymTable symTable) {
-		if (myType.toString().equals("void")) {
+		if (myType instanceof VoidNode) {
 			ErrMsg.fatal(myId.myLineNum, myId.myCharNum, "Non-function declared void");
 			return;
 		}
@@ -329,7 +329,7 @@ class VarDeclNode extends DeclNode {
 			nameAnalysisTupleHelper(symTable, ((TupleNode)myType).myId.toString(), myId.toString());
 		} else {
 			Sym variable = new Sym(myType.toString());
-		
+			nameAnalysisVarHelper(symTable);
 		/*
 		try {
 			symTable.addDecl(myId.myStrVal, variable);
@@ -340,7 +340,6 @@ class VarDeclNode extends DeclNode {
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}*/
-			nameAnalysisVarHelper(symTable);
 		}
 	}
 
@@ -374,7 +373,7 @@ class VarDeclNode extends DeclNode {
 		} catch (Exception e) {
 			System.out.println(e);
 		}
-    }
+    	}
 	
 	public IdNode getId() {
 		return myId;
@@ -956,11 +955,11 @@ class IdNode extends ExpNode {
     }
 
     public void unparse(PrintWriter p, int indent) {
-        p.print(myStrVal);
+	p.print(myStrVal);
 	if (mySym != null) {
 	    p.print("<");
-        p.print(mySym.toString());
-        p.print(">");
+      	    p.print(mySym.toString());
+            p.print(">");
 	}
     }
 
@@ -970,8 +969,13 @@ class IdNode extends ExpNode {
 
     // TODO: need to consider for name of TUPLE
     public void nameAnalysis(SymTable symTable) {
-		try {
-			mySym = symTable.lookupGlobal(myStrVal);
+	// System.out.println(myStrVal);
+       	        try {
+			if(mySymTable == null) { // not a field of tuple
+				mySym = symTable.lookupGlobal(myStrVal);
+			} else {
+				mySym = mySymTable.lookupGlobal(myStrVal);
+			}
 		} catch (EmptySymTableException e) {
 			System.out.println("EmptySymTableException");
 		}
@@ -980,6 +984,11 @@ class IdNode extends ExpNode {
 		}
     }
 
+    public void setSymTable(SymTable symTable) {
+	    mySymTable = symTable;
+    }
+
+    private SymTable mySymTable;
     public int myLineNum;
     public int myCharNum;
     public String myStrVal;
@@ -1029,7 +1038,7 @@ class TupleAccessNode extends ExpNode {
     }
 
     public void unparse(PrintWriter p, int indent) {
-        myLoc.unparse(p, 0);
+	myLoc.unparse(p, 0);
         p.print(":");
         myId.unparse(p, 0);
     }
@@ -1044,22 +1053,27 @@ class TupleAccessNode extends ExpNode {
 
 		// confirmed with TA, no error inputs such as true:false:something so myLoc must be of type IdNode here
 		try {
+			// check if the LHS was defined
 			Sym sym = symTable.lookupGlobal(((IdNode)myLoc).toString());
 			if(sym == null) {
 				ErrMsg.fatal(((IdNode)myLoc).myLineNum, ((IdNode)myLoc).myCharNum, "Undeclared identifier");
-			} else if (!(sym instanceof TupleSym)) {
+			} else if (!(sym instanceof TupleSym)) { // LHS is type Tuple
 				ErrMsg.fatal(((IdNode)myLoc).myLineNum, ((IdNode)myLoc).myCharNum, "Colon-access of non-tuple type");
-			} else {
-				Sym sym2 = symTable.lookupGlobal(sym.toString());
+			} else { 
+				Sym sym2 = symTable.lookupGlobal(sym.toString()); // LHS is a declared Tuple type 
 				if(sym2 == null) {
 					ErrMsg.fatal(((IdNode)myLoc).myLineNum, ((IdNode)myLoc).myCharNum, "Undeclared identifier");
-				} else if (!(sym2 instanceof TupleDefSym)) {
+				} else if (!(sym2 instanceof TupleDefSym)) { // not declared
 					ErrMsg.fatal(((IdNode)myLoc).myLineNum, ((IdNode)myLoc).myCharNum, "Invalid name of tuple type");
-				} else {
+				} else { // check if the RHS is a valid field
+					((IdNode)myLoc).nameAnalysis(symTable); // call nameanalysis on LHS
 					SymTable curSymTable = ((TupleDefSym)sym2).getSymTable();
 					Sym sym3 = curSymTable.lookupGlobal(myId.toString());
 					if(sym3 == null) {
 						ErrMsg.fatal(myId.myLineNum, myId.myCharNum, "Invalid tuple field name");
+					} else { // call nameanalysis on RHS
+						myId.setSymTable(curSymTable);
+						myId.nameAnalysis(symTable);
 					}
 				}
 			}

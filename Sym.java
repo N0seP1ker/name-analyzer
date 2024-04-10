@@ -27,8 +27,11 @@ class FnSym extends Sym {
 	}
 
 	public String toString() {
-		String param = String.join (", ", paramType);
-		return param + " -> " + retType;
+		String param = String.join (",", paramType);
+		if (param.equals("")) {
+                        param = " ";
+                }
+		return param + "->" + retType;
 	}
 }
 
@@ -40,6 +43,7 @@ class TupleDefSym extends Sym {
 	public TupleDefSym (String name, SymTable symTable) {
 		super("tuple");
 		this.symTable = symTable;
+		this.name = name;
 	}
 
 	// get type will return "tuple"
@@ -48,6 +52,10 @@ class TupleDefSym extends Sym {
 
 	public SymTable getSymTable() {
 		return symTable;
+	}
+
+	public String toString() {
+		return name;
 	}
 }
 

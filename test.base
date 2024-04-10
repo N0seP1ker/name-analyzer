@@ -9,6 +9,6 @@ void g{} [
     tuple Point p.
     p:x = a.
     b = a == 3.
-    !! f(a + p:y*2, b).
+    f(a + p:y*2, b).
     g().
 ]
