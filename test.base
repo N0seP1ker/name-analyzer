@@ -21,11 +21,11 @@ integer f{integer x, logical b} [
 
 !! testing tuple access
 void g{} [
-!!    tuple AltPoint pPoint.
-!!    pPoint:p:a = 100.
-!!    pPoint:p:i:z = 3.
-!!    pPoint:p:y = 200.
-!!	pPoint:count = 3.
+    tuple AltPoint pPoint.
+    pPoint:p:a = 100.
+    pPoint:p:i:z = 3.
+    pPoint:p:y = 200.
+	pPoint:count = 3.
 
 	!! function call inside function
 	g().

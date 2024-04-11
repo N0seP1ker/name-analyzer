@@ -19,6 +19,11 @@ integer f{integer x, logical b} [
 ]
 
 void g{} [
+    tuple AltPoint pPoint.
+    pPoint<AltPoint>:p<Point>:a<integer> = 100.
+    pPoint<AltPoint>:p<Point>:i<Inside>:z<integer> = 3.
+    pPoint<AltPoint>:p<Point>:y<integer> = 200.
+    pPoint<AltPoint>:count<integer> = 3.
     g< ->void>().
 ]
 
