@@ -2,6 +2,24 @@ tuple Point {
     integer x.
     integer y.
 }.
+
+tuple AltPoint {
+    tuple Point p.
+    integer count.
+}.
+
+integer f{integer x, logical b} [ ]
+
 void g{} [
-	tuple Point k.
+    integer a.
+    logical b.
+    tuple Point p.
+    tuple AltPoint pPoint.
+    p:x = a.
+    b = a == 3.
+    f(a + p:y*2, b).
+    g().
+    pPoint:p:x = 100.
+    pPoint:p:y = 200.
+	p:x = 3.
 ]

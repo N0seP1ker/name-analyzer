@@ -1,7 +1,12 @@
+tuple Inside {
+	integer z.
+}.
+
 tuple Point {
     integer x.
     integer y.
-	tuple Color c.
+	integer a.
+	tuple Inside i.
 }.
 
 tuple AltPoint {
@@ -9,17 +14,47 @@ tuple AltPoint {
     integer count.
 }.
 
-integer f{integer x, logical b} [ ]
+!! check formals work
+integer f{integer x, logical b} [
+	x=b.
+]
 
+!! testing tuple access
 void g{} [
-    integer a.
-    logical b.
-    tuple Point p.
-    tuple AltPoint pPoint.
-    p:x = a.
-    b = a == 3.
-    f(a + p:y*2, b).
-    g().
-    pPoint:p:x = 100.
-    pPoint:p:y = 200.
+!!    tuple AltPoint pPoint.
+!!    pPoint:p:a = 100.
+!!    pPoint:p:i:z = 3.
+!!    pPoint:p:y = 200.
+!!	pPoint:count = 3.
+
+	!! function call inside function
+	g().
+]
+
+!! testing if/else and while statement; this should work
+integer testWhileInIfElse {integer b} [
+	integer x. !! should be able to be seen inside if and else
+	if b == -1 
+	[
+		integer y.
+		integer c.
+		integer x.
+
+		x = 4+3*5-y.
+
+		while c 
+		[ 
+			integer insideWhile.
+			y = y*2+insideWhile. 
+		] 
+	]
+	else [ 
+		x = 0. 
+	]
+]
+
+!! testing function call prints out correct formals
+void funcCall{integer a, integer b} [
+	tuple Point p.
+	f(a + p:y*2, b).
 ]

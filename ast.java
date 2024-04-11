@@ -358,15 +358,15 @@ class VarDeclNode extends DeclNode {
 
 	public void nameAnalysis(SymTable symTable, SymTable tupleSymTable) {
 		if (myType instanceof VoidNode) {
-                        ErrMsg.fatal(myId.myLineNum, myId.myCharNum, "Non-function declared void");
-                        return;
-                }
+            ErrMsg.fatal(myId.myLineNum, myId.myCharNum, "Non-function declared void");
+            return;
+        }
 		else if (myType instanceof TupleNode) {
-                        nameAnalysisTupleHelper(symTable, tupleSymTable, ((TupleNode)myType).myId.toString(), myId.toString());
-                }
+			nameAnalysisTupleHelper(symTable, tupleSymTable, ((TupleNode)myType).myId.toString(), myId.toString());
+        }
 		else {
-                       Sym variable = new Sym(myType.toString());
-                       nameAnalysisVarHelper(tupleSymTable);
+			Sym variable = new Sym(myType.toString());
+            nameAnalysisVarHelper(tupleSymTable);
 		}
 	}
 
@@ -1071,7 +1071,58 @@ class TupleAccessNode extends ExpNode {
         myId.unparse(p, 0);
     }
 
-	public void nameAnalysis(SymTable symTable) {
+	public LinkedList<IdNode> helper(LinkedList<IdNode> tempList) {
+		if (myLoc instanceof TupleAccessNode) {
+			((TupleAccessNode)myLoc).helper(tempList);
+		}
+		else if (myLoc instanceof IdNode) {
+			tempList.add((IdNode)myLoc);
+			System.out.println(((IdNode)myLoc).toString());
+		}
+
+		tempList.add(myId);
+		System.out.println(myId.toString());
+		return tempList;
+	}
+
+/*	public void nameAnalysis(SymTable symTable) {
+		// TODO: check if loc is a tuple
+		// if determined it is a tuple then use the tuple sym 
+		// to lookup the RHS field to see if it is valid
+		LinkedList<IdNode> a = new LinkedList<IdNode>();
+		LinkedList<IdNode> elements = helper(a);
+
+		for (int i = 0; i < elements.size() - 1; i++) {
+			System.out.println(elements.get(i).toString());
+			nameAnalysisElements(elements.get(i), elements.get(i + 1), symTable);
+		}
+	}*/
+
+/*	public void nameAnalysisElements(IdNode tuple, IdNode field, SymTable symTable) {
+
+		try {
+				// Lookup the tuple in the symbol table to check if it's a declared tuple type
+				Sym sym2 = symTable.lookupGlobal(tuple.toString());
+				System.out.println(sym2.getType());
+				if (sym2 == null) {
+					ErrMsg.fatal(tuple.myLineNum, tuple.myCharNum, "Undeclared identifier");
+				} else if (!(sym2 instanceof TupleSym)) {
+					ErrMsg.fatal(tuple.myLineNum, tuple.myCharNum, "Invalid name of tuple type");
+				} else {
+					// If the tuple is a declared tuple type, check if the field is valid
+					Sym sym3 = symTable.lookupGlobal(sym2.toString());
+					SymTable curSymTable = ((TupleDefSym) sym3).getSymTable();
+					Sym sym4 = curSymTable.lookupGlobal(field.toString());
+					if (sym3 == null) {
+						ErrMsg.fatal(field.myLineNum, field.myCharNum, "Invalid tuple field name");
+					}
+				}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}*/
+
+public void nameAnalysis(SymTable symTable) {
 		// TODO: check if loc is a tuple
 		// if determined it is a tuple then use the tuple sym 
 		// to lookup the RHS field to see if it is valid

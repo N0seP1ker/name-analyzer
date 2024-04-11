@@ -29,5 +29,40 @@ void g{} [
 ]
 
 tuple A {
-  tuple B b. !! Invalid name of tuple type expected 32:9
+    tuple B b. !! Invalid name of tuple type expected 32:11; TODO: it does 32:13
+    tuple Point k.
 }.
+
+!! 3) non-function void
+void ab.
+void az.
+
+!! 4) Undeclared identifier of tuple access
+tuple Point4 {
+    integer x.
+    integer y.
+}.
+
+void main{} [
+    Point4:x = 3.
+]
+
+!! 5) Invalid tuple field name
+tuple Five {
+	integer a.	
+}.
+
+void numberFive{} [
+	tuple Five test.
+	test:b = 1. !! invalid tuple field name
+]
+
+!! 6) Invalid name of tuple type
+void numberSix{} [
+	tuple BadTuple aaa. !! tuple BadTuple doesn't exist
+]
+
+!! 7) Colon-access of non-tuple type
+void numberSeven{} [
+    g:bad = 3. !! g is a function error at 67:5
+]

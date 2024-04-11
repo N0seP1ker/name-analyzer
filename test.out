@@ -1,0 +1,46 @@
+tuple Inside {
+    integer z.
+}.
+
+tuple Point {
+    integer x.
+    integer y.
+    integer a.
+    tuple Inside i.
+}.
+
+tuple AltPoint {
+    tuple Point p.
+    integer count.
+}.
+
+integer f{integer x, logical b} [
+    x<integer> = b<logical>.
+]
+
+void g{} [
+    g< ->void>().
+]
+
+integer testWhileInIfElse{integer b} [
+    integer x.
+    if (b<integer> == (-1)) [
+        integer y.
+        integer c.
+        integer x.
+        x<integer> = ((4 + (3 * 5)) - y<integer>).
+        while c<integer> [
+            integer insideWhile.
+            y<integer> = ((y<integer> * 2) + insideWhile<integer>).
+        ]
+    ]
+    else [
+        x<integer> = 0.
+    ]
+]
+
+void funcCall{integer a, integer b} [
+    tuple Point p.
+    f<integer,logical->integer>((a<integer> + (p<Point>:y<integer> * 2)), b<integer>).
+]
+
