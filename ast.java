@@ -374,10 +374,10 @@ class VarDeclNode extends DeclNode {
 		try {
 			Sym tupleSym = symTable.lookupGlobal(tupleName);
 			if (tupleSym == null) {
-				ErrMsg.fatal(myId.myLineNum, myId.myCharNum, "Invalid name of tuple type");
+				ErrMsg.fatal(((TupleNode)myType).myId.myLineNum, ((TupleNode)myType).myId.myCharNum, "Invalid name of tuple type");
 			}
 			else if (!(tupleSym instanceof TupleDefSym)) {
-				ErrMsg.fatal(myId.myLineNum, myId.myCharNum, "Invalid name of tuple type");
+				ErrMsg.fatal(((TupleNode)myType).myId.myLineNum, ((TupleNode)myType).myId.myCharNum, "Invalid name of tuple type");
 			} else {	
 				try {
 		            tupleSymTable.addDecl(varName, new TupleSym(tupleName, varName));

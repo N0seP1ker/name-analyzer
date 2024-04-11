@@ -49,3 +49,21 @@ void funcCall{integer a, integer b} [
     f<integer,logical->integer>((a<integer> + (p<Point>:y<integer> * 2)), b<integer>).
 ]
 
+integer globalOne.
+logical globalTwo.
+void funcCallTwo{} [
+    globalOne<integer> = 1.
+    globalTwo<logical> = 2.
+]
+
+logical testFctnCallIf{integer a, integer b} [
+    logical c.
+    logical ax.
+    if f<integer,logical->integer>(a<integer>, b<integer>) [
+        g< ->void>().
+        if f<integer,logical->integer>((a<integer> ~= b<integer>), (~c<logical>), (-123123), (-"sflsaj"), (-(110 | ((10 & a<integer>) & "hello")))) [
+            ax<logical>++.
+        ]
+    ]
+]
+

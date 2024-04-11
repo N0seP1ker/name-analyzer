@@ -58,3 +58,26 @@ void funcCall{integer a, integer b} [
 	tuple Point p.
 	f(a + p:y*2, b).
 ]
+
+!! global integer and logical
+integer globalOne.
+logical globalTwo.
+
+void funcCallTwo{} [
+	globalOne = 1.
+	globalTwo = 2.
+]
+
+!! Testing fctnCall within if
+logical testFctnCallIf {integer a, integer b} [
+	logical c.
+	logical ax.
+
+	if f(a, b) [
+		g(). 
+		if f(a ~= b, ~c, -123123, -"sflsaj", -(110 | 010 & a & "hello")) [
+			ax++.
+		]
+	]
+]
+
